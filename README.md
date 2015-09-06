@@ -80,10 +80,22 @@ interface Issue {
   User assignee;
 
   DOMString getField(DOMString name);
+  Object getFields(DOMString[] name);
   void setField(DOMString name, DOMString value);
+  void setFields(Object fields);
   void addComment(DOMString text);
+  IssueComment[] getComments();
+  void deleteComment((IssueComment or DOMString) comment);
 
   static (Issue or DOMString)[] find(DOMString[] keys);
+}
+
+interface IssueComment {
+  DOMString id;
+  User author;
+  Date created;
+  Date updated;
+  DOMString body;
 }
 ```
 
