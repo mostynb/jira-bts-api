@@ -269,6 +269,56 @@ function deleteComment(comment)
   }
 }
 
+function getStatus(name)
+{
+  var url = constructURL('issue/' + encodeURIComponent(this.key)  + '?fields=status');
+  try {
+    var response = URL.get(url, OPTIONS);
+    var json = JSON.parse(response);
+    return json.fields.status.name;
+  } catch (e) {
+    throw new CriticBTSError(e);
+  }
+}
+
+function setStatus(name)
+{
+  try {
+    var curr_status = this.getStatus(name);
+    if (curr_status == name) {
+      return null; // Already the correct status.
+    }
+  } catch (ignore) {
+  }
+
+  var url = constructURL('issue/' + encodeURIComponent(this.key)  + '/transitions');
+  try {
+
+    // Get possible transitions:
+    var response = URL.get(url, OPTIONS);
+    var json = JSON.parse(response);
+
+    // Look to see if the target state is directly reachable:
+    var transitions = json.transitions || new Array();
+    for (let i = 0; i < transitions.length; i++) {
+      if (!transitions[i].id || !transitions[i].to.name) {
+        continue;
+      }
+      if (transitions[i].to.name === name) {
+        // Apply the transition:
+        var data = JSON.stringify({ 'transition': { 'id': transitions[i].id } });
+        response = URL.post(url, data, OPTIONS);
+        return true;
+      }
+    }
+
+  } catch (e) {
+    throw new CriticBTSError(e);
+  }
+
+  return false;
+}
+
 CriticBTSIssue.prototype = Object.create(Object.prototype,
   {
     getField: { value: getField, writable: true, configurable: true },
@@ -278,6 +328,8 @@ CriticBTSIssue.prototype = Object.create(Object.prototype,
     addComment: { value: addComment, writable: true, configurable: true },
     getComments: { value: getComments, writable: true, configurable: true },
     deleteComment: { value: deleteComment, writable: true, configurable: true },
+    getStatus: { value: getStatus, writable: true, configurable: true },
+    setStatus: { value: setStatus, writable: true, configurable: true },
   });
 
 CriticBTSIssue.find = function (keys)

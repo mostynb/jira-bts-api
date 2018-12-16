@@ -86,6 +86,8 @@ interface Issue {
   void addComment(DOMString text);
   IssueComment[] getComments();
   void deleteComment((IssueComment or DOMString) comment);
+  DOMString getStatus(DOMString name);
+  (Boolean or Null) setStatus(DOMString name);
 
   static (Issue or DOMString)[] find(DOMString[] keys);
 }
